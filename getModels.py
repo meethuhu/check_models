@@ -4,17 +4,14 @@ import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Tuple, Dict, Any, Optional
 
-URL = ''
-KEY = ''
+URL = 'https://'
+KEY = 'sk-'
 
 MAX_WORKERS = 3  # 默认最大线程数
 TIME_OUT = 15  # 默认超时时间
 INTERVAL = 0  # 默认间隔时间
-OPEN_WEBUI = False  # 默认不使用 Open WebUI
-ONLY_OPENAI = True  # 仅测试 OPENAI 模型
-
-models_path = '/v1/models' if not OPEN_WEBUI else '/api/models'
-chat_path = '/v1/chat/completions' if not OPEN_WEBUI else '/api/chat/completions'
+OPEN_WEBUI = False  # 上游是否为 OPEN_WEBUI
+ONLY_OPENAI = False  # 仅测试 OPENAI 模型
 
 OPENAI_MODELS = ['gpt-3.5-turbo', 'gpt-3.5-turbo-0301', 'gpt-3.5-turbo-0613', 'gpt-3.5-turbo-1106',
                  'gpt-3.5-turbo-0125', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k-0613', 'gpt-3.5-turbo-instruct', 'gpt-4',
@@ -25,6 +22,9 @@ OPENAI_MODELS = ['gpt-3.5-turbo', 'gpt-3.5-turbo-0301', 'gpt-3.5-turbo-0613', 'g
                  'text-babbage-001', 'text-ada-001', 'text-davinci-002', 'text-davinci-003', 'text-moderation-latest',
                  'text-moderation-stable', 'text-davinci-edit-001', 'davinci-002', 'babbage-002', 'dall-e-2',
                  'dall-e-3', 'whisper-1', 'tts-1', 'tts-1-1106', 'tts-1-hd', 'tts-1-hd-1106']
+
+models_path = '/v1/models' if not OPEN_WEBUI else '/api/models'
+chat_path = '/v1/chat/completions' if not OPEN_WEBUI else '/api/chat/completions'
 
 # 颜色常量
 RED = "\033[91m"
@@ -119,7 +119,15 @@ def main():
         "messages": [{"role": "user", "content": "hi"}],
         "max_tokens": 1
     }
-    models = fetch_models(URL, headers) if ONLY_OPENAI else OPENAI_MODELS
+
+    if ONLY_OPENAI:
+        models = [{'id': model} for model in OPENAI_MODELS]
+    else:
+        models = fetch_models(URL, headers)
+
+    # 打印 models 用于调试
+    print(models)
+
     model_ids = [model['id'] for model in models]
 
     print('Start checking...')
@@ -144,6 +152,9 @@ def main():
     print('------------------')
     print('Timeout models: ')
     print(', '.join(timeout_models))
+    print('------------------')
+    print('Failed models: ')
+    print(', '.join(failed_models))
 
 
 if __name__ == "__main__":
