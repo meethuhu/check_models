@@ -10,10 +10,21 @@ KEY = ''
 MAX_WORKERS = 3  # 默认最大线程数
 TIME_OUT = 15  # 默认超时时间
 INTERVAL = 0  # 默认间隔时间
-OPEN_WEBUI = False
+OPEN_WEBUI = False  # 默认不使用 Open WebUI
+ONLY_OPENAI = True  # 仅测试 OPENAI 模型
 
 models_path = '/v1/models' if not OPEN_WEBUI else '/api/models'
 chat_path = '/v1/chat/completions' if not OPEN_WEBUI else '/api/chat/completions'
+
+OPENAI_MODELS = ['gpt-3.5-turbo', 'gpt-3.5-turbo-0301', 'gpt-3.5-turbo-0613', 'gpt-3.5-turbo-1106',
+                 'gpt-3.5-turbo-0125', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k-0613', 'gpt-3.5-turbo-instruct', 'gpt-4',
+                 'gpt-4-0314', 'gpt-4-0613', 'gpt-4-1106-preview', 'gpt-4-0125-preview', 'gpt-4-32k', 'gpt-4-32k-0314',
+                 'gpt-4o-2024-08-06', 'gpt-4-32k-0613', 'gpt-4-turbo-preview', 'gpt-4-turbo', 'gpt-4-turbo-2024-04-09',
+                 'gpt-4o', 'gpt-4o-2024-05-13', 'gpt-4o-mini', 'gpt-4o-mini-2024-07-18', 'gpt-4-vision-preview',
+                 'text-embedding-ada-002', 'text-embedding-3-small', 'text-embedding-3-large', 'text-curie-001',
+                 'text-babbage-001', 'text-ada-001', 'text-davinci-002', 'text-davinci-003', 'text-moderation-latest',
+                 'text-moderation-stable', 'text-davinci-edit-001', 'davinci-002', 'babbage-002', 'dall-e-2',
+                 'dall-e-3', 'whisper-1', 'tts-1', 'tts-1-1106', 'tts-1-hd', 'tts-1-hd-1106']
 
 # 颜色常量
 RED = "\033[91m"
@@ -23,7 +34,7 @@ GRAY = "\033[37m"
 RESET = "\033[0m"
 
 
-def fetch_models(url: str, headers: Dict[str,  str]) -> List[Dict[str, Any]]:
+def fetch_models(url: str, headers: Dict[str, str]) -> List[Dict[str, Any]]:
     """获取模型列表"""
     try:
         response = requests.get(f"{url}{models_path}", headers=headers, timeout=TIME_OUT)
@@ -108,8 +119,7 @@ def main():
         "messages": [{"role": "user", "content": "hi"}],
         "max_tokens": 1
     }
-
-    models = fetch_models(URL, headers)
+    models = fetch_models(URL, headers) if ONLY_OPENAI else OPENAI_MODELS
     model_ids = [model['id'] for model in models]
 
     print('Start checking...')
